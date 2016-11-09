@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Chat</title>
+	<link href="https://fonts.googleapis.com/css?family=Roboto&amp;subset=cyrillic" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="stylesheet.css">
+</head>
+<body>
+	<div class="container">
+		<h1>Welcome to Chat v0.0.1</h1>
+	
+		<form id="publish">
+			<input type="text" name="message" autofocus>
+			<button type="submit">Send</button>
+		</form>
+		<p class="online">Сейчас онлайн: <span id="online"></span></p>
+		<ul id="messages"></ul>
+	</div>
+
+
+	<script>
+		var publish = document.getElementById('publish'),
+		   messages = document.getElementById('messages'),
+		   online = document.getElementById('online')
+
+		publish.onsubmit = function(e) {
+			
+			var xhr = new XMLHttpRequest();
+			xhr.open('POST', '/publish', true);
+			xhr.send(JSON.stringify({message: this.elements.message.value}));
+			
+			this.elements.message.value = '';
+			e.preventDefault();
+		}
+
+		subscribe();
+		onlineNow();
+		function subscribe() {
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', '/subscribe', true);
+
+			xhr.onreadystatechange = function() {
+		      if (this.readyState != 4) return;
+		      if (this.status != 200) {
+		        setTimeout(subscribe, 500);
+		        return;
+		      }
+		      var li = document.createElement('li');
+		      var span = document.createElement('span');
+		      li.appendChild(span);
+		      span.classList.add('anim-appear');
+		      span.appendChild(document.createTextNode(this.responseText));
+		      messages.appendChild(li);
+		      subscribe();
+		    };
+
+			xhr.send(null);
+		}
+
+		function onlineNow() {
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', '/online', true);
+			
+			xhr.onreadystatechange = function() {
+		      if (this.readyState != 4) return;
+		      if (this.status != 200) {
+		        setTimeout(onlineNow, 500);
+		        return;
+		      }
+		        online.textContent = this.responseText;
+		        setTimeout(onlineNow, 5000);
+		     }
+		     xhr.send(null);
+		}
+	</script>
+</body>
+</html>
+
+
+
